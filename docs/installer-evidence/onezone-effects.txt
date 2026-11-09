@@ -1,0 +1,374 @@
+Recovered from SEBasicLighting64.dll in legionspace-1.9.11.5_x64_rtm.exe.
+
+The OneZone constructor supports JSON IDs 0, 21, 11. Animation 21 uses
+AnimationColorPulse24Zone, whose wire-ID method returns 4.
+
+
+--- 1800a3960 ---
+
+undefined8 * FUN_1800a3960(undefined8 *param_1)
+
+{
+  undefined8 ***pppuVar1;
+  undefined4 local_78;
+  undefined4 local_74;
+  undefined4 local_70;
+  undefined8 ***local_68;
+  undefined8 uStack_60;
+  ulonglong local_58;
+  ulonglong local_50;
+  undefined8 ***local_48;
+  undefined8 uStack_40;
+  ulonglong local_38;
+  ulonglong local_30;
+  undefined8 ***local_28;
+  undefined8 uStack_20;
+  ulonglong local_18;
+  ulonglong local_10;
+  
+  FUN_18005cc10(param_1);
+  *param_1 = LuminousNB::Device_OneZone::vftable;
+  FUN_1800fa750((undefined1 (*) [32])(param_1 + 0x1c),0,0x3c0);
+  FUN_1800fa750((undefined1 (*) [32])(param_1 + 0x94),0,0x3c0);
+  param_1[0x10c] = 0;
+  *(undefined1 *)(param_1 + 0x10d) = 1;
+  *(undefined4 *)((longlong)param_1 + 0x86c) = 0;
+  *(undefined2 *)(param_1 + 0x10e) = 0;
+  param_1[0x10f] = 0;
+  param_1[0x110] = 0;
+  param_1[0x111] = 0;
+  local_68 = (undefined8 ***)0x0;
+  uStack_60 = 0;
+  local_58 = 0;
+  local_50 = 0;
+  FUN_180010be0(&local_68,(undefined8 *)"ROOT\\WMI",8);
+  if ((undefined8 ****)(param_1 + 2) != &local_68) {
+    pppuVar1 = &local_68;
+    if (0xf < local_50) {
+      pppuVar1 = local_68;
+    }
+    FUN_18000cc80(param_1 + 2,pppuVar1,local_58);
+  }
+  FUN_180010cd0((longlong *)&local_68);
+  local_48 = (undefined8 ***)0x0;
+  uStack_40 = 0;
+  local_38 = 0;
+  local_30 = 0;
+  FUN_180010be0(&local_48,(undefined8 *)"LENOVO_UTILITY_EVENT",0x14);
+  if ((undefined8 ****)(param_1 + 6) != &local_48) {
+    pppuVar1 = &local_48;
+    if (0xf < local_30) {
+      pppuVar1 = local_48;
+    }
+    FUN_18000cc80(param_1 + 6,pppuVar1,local_38);
+  }
+  FUN_180010cd0((longlong *)&local_48);
+  local_28 = (undefined8 ***)0x0;
+  uStack_20 = 0;
+  local_18 = 0;
+  local_10 = 0;
+  FUN_180010be0(&local_28,(undefined8 *)"PressTypeDataVal",0x10);
+  if ((undefined8 ****)(param_1 + 10) != &local_28) {
+    pppuVar1 = &local_28;
+    if (0xf < local_10) {
+      pppuVar1 = local_28;
+    }
+    FUN_18000cc80(param_1 + 10,pppuVar1,local_18);
+  }
+  FUN_180010cd0((longlong *)&local_28);
+  local_78 = 0;
+  local_74 = 0x15;
+  local_70 = 0xb;
+  FUN_18008fd70(param_1 + 0x10f,(undefined8 *)&local_78,3);
+  return param_1;
+}
+
+
+
+--- 1800be410 ---
+
+undefined8 FUN_1800be410(void)
+
+{
+  return 4;
+}
+
+
+
+--- Factory case 21 ---
+  case 0x15:
+    puVar2 = (undefined8 *)FUN_1800ca1c8(0x78);
+    *puVar2 = 0;
+    puVar2[1] = 0;
+    *(undefined4 *)(puVar2 + 1) = 1;
+    *(undefined4 *)((longlong)puVar2 + 0xc) = 1;
+    *puVar2 = std::_Ref_count_obj2<LuminousNB::AnimationColorPulse24Zone>::vftable;
+    puVar3 = puVar2 + 2;
+    FUN_1800bdfc0(puVar3);
+    *puVar3 = LuminousNB::AnimationColorPulse24Zone::vftable;
+    *(undefined4 *)((longlong)puVar2 + 0x3c) = 0x15;
+    *param_1 = (longlong)puVar3;
+    lVar5 = param_1[1];
+    param_1[1] = (longlong)puVar2;
+    if (lVar5 != 0) {
+      LOCK();
+      piVar4 = (int *)(lVar5 + 8);
+      iVar1 = *piVar4;
+      *piVar4 = *piVar4 + -1;
+      UNLOCK();
+      if (iVar1 == 1) {
+        (*(code *)PTR__guard_dispatch_icall_18010b8f8)(lVar5);
+        LOCK();
+        piVar4 = (int *)(lVar5 + 0xc);
+        iVar1 = *piVar4;
+        *piVar4 = *piVar4 + -1;
+        UNLOCK();
+        if (iVar1 == 1) goto LAB_1800ba163;
+      }
+    }
+    break;
+
+
+--- Shipped OneZone defaults ---
+{
+	"profilesIndex": 3,
+	"profiles": [
+	{
+		"layers":
+		[{
+			"animationConfig":{
+				"clockwise":0,
+				"colorList":[{"r":21, "g":141, "b":221}],
+				"colorSize":1,
+				"colorType":1,
+				"speed":2,
+				"animationId":21
+			},
+			"keys":[1],
+			"layerId":1,"isApply":true
+		}],
+		"profileId":1
+	},
+	{
+		"layers":
+		[{
+			"animationConfig":{
+				"colorList":[{"r":88, "g":5, "b":255}],
+				"colorSize":1,
+				"colorType":2,
+				"animationId":11
+			},
+			"keys":[1],
+			"layerId":1,"isApply":true
+		}],
+		"profileId":2
+	},
+	{
+		"layers":
+		[{
+			"animationConfig":{
+				"colorList":[],
+				"animationId":0
+			},
+			"keys":[1],
+			"layerId":1,"isApply":true
+		}],
+		"profileId":3
+	}]
+}
+--- Pulse timing / RGB scaling 1800be240 ---
+
+undefined8 FUN_1800be240(longlong param_1)
+
+{
+  longlong *plVar1;
+  longlong lVar2;
+  longlong lVar3;
+  int *piVar4;
+  undefined8 uVar5;
+  undefined4 extraout_var;
+  ulonglong uVar6;
+  int iVar7;
+  wchar_t *pwVar8;
+  int iVar9;
+  undefined4 uVar10;
+  undefined4 in_stack_ffffffffffffffec;
+  undefined1 in_stack_fffffffffffffff0;
+  
+  plVar1 = *(longlong **)(param_1 + 0x40);
+  if (plVar1 == (longlong *)0x0) {
+    piVar4 = (int *)FUN_18000eea0();
+    uVar5 = FUN_18000f980(piVar4,1,L"ASSERT False!!!m_proColor",
+                          L"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\2512_Hardware\\Gaming\\gaming_plugins\\src\\SEPlugin\\SELuminous\\src\\BasicLightingCore\\Animation\\AnimationColorPulse.cpp"
+                          ,CONCAT44(in_stack_ffffffffffffffec,0x41),in_stack_fffffffffffffff0);
+    return CONCAT71((int7)((ulonglong)uVar5 >> 8),1);
+  }
+  lVar2 = *(longlong *)(param_1 + 0x30);
+  iVar7 = *(int *)(param_1 + 0x10);
+  iVar9 = iVar7 * *(int *)(lVar2 + 8) + *(int *)(param_1 + 8);
+  *(int *)(param_1 + 8) = iVar9;
+  if (*(int *)(param_1 + 0xc) <= iVar9) {
+    iVar7 = -iVar7;
+    *(int *)(param_1 + 0x10) = iVar7;
+  }
+  if (iVar9 < -9) {
+    *(int *)(param_1 + 0x10) = -iVar7;
+    if (lVar2 == 0) {
+      piVar4 = (int *)FUN_18000eea0();
+      FUN_18000f980(piVar4,1,L"ASSERT False!!!m_proConfig",
+                    L"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\2512_Hardware\\Gaming\\gaming_plugins\\src\\SEPlugin\\SELuminous\\src\\BasicLightingCore\\Animation\\AnimationBase.cpp"
+                    ,CONCAT44(in_stack_ffffffffffffffec,0x49),in_stack_fffffffffffffff0);
+LAB_1800be2fd:
+      uVar6 = 6;
+    }
+    else if ((*(char *)(lVar2 + 0xc) != '\0') || (uVar6 = plVar1[1] - *plVar1 >> 2, (int)uVar6 < 1))
+    goto LAB_1800be2fd;
+    *(int *)(plVar1 + 3) = (int)plVar1[3] + 1;
+    if (uVar6 <= (ulonglong)(longlong)(int)plVar1[3]) {
+      *(undefined4 *)(plVar1 + 3) = 0;
+    }
+  }
+  iVar9 = 3 - *(int *)(*(longlong *)(param_1 + 0x30) + 8);
+  iVar7 = -iVar9;
+  if (iVar7 < 0) {
+    iVar7 = iVar9;
+  }
+  Sleep(iVar7 * 10);
+  lVar2 = *(longlong *)(param_1 + 0x30);
+  *(undefined4 *)(param_1 + 0x50) = *(undefined4 *)(lVar2 + 8);
+  if (lVar2 == 0) {
+    piVar4 = (int *)FUN_18000eea0();
+    uVar10 = 0x49;
+    pwVar8 = L"ASSERT False!!!m_proConfig";
+LAB_1800be35d:
+    FUN_18000f980(piVar4,1,pwVar8,
+                  L"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\2512_Hardware\\Gaming\\gaming_plugins\\src\\SEPlugin\\SELuminous\\src\\BasicLightingCore\\Animation\\AnimationBase.cpp"
+                  ,CONCAT44(in_stack_ffffffffffffffec,uVar10),in_stack_fffffffffffffff0);
+  }
+  else {
+    plVar1 = *(longlong **)(param_1 + 0x40);
+    if (plVar1 == (longlong *)0x0) {
+      piVar4 = (int *)FUN_18000eea0();
+      uVar10 = 0x4a;
+      pwVar8 = L"ASSERT False!!!m_proColor";
+      goto LAB_1800be35d;
+    }
+    if ((*(char *)(lVar2 + 0xc) == '\0') && (0 < (int)(plVar1[1] - *plVar1 >> 2))) {
+      lVar2 = plVar1[3];
+      if (*(int *)(param_1 + 0x60) != (int)lVar2) {
+        *(int *)(param_1 + 0x58) = *(int *)(param_1 + 0x58) + 1;
+        *(int *)(param_1 + 0x60) = (int)lVar2;
+      }
+      lVar2 = plVar1[1];
+      lVar3 = *plVar1;
+      piVar4 = (int *)(lVar2 - lVar3 >> 2);
+      if ((int)piVar4 <= *(int *)(param_1 + 0x58)) {
+        *(undefined4 *)(param_1 + 0x58) = 0;
+        return CONCAT71((int7)(lVar2 - lVar3 >> 10),1);
+      }
+      goto LAB_1800be389;
+    }
+  }
+  piVar4 = (int *)(*(longlong *)(param_1 + 0x40) + 0x18);
+  if (*(int *)(param_1 + 0x60) != *piVar4) {
+    *(int *)(param_1 + 0x60) = *piVar4;
+    uVar10 = FUN_1800b8820();
+    piVar4 = (int *)CONCAT44(extraout_var,uVar10);
+    *(undefined4 *)(param_1 + 0x5c) = uVar10;
+  }
+LAB_1800be389:
+  return CONCAT71((int7)((ulonglong)piVar4 >> 8),1);
+}
+
+
+--- Pulse timing / RGB scaling 1800be050 ---
+
+uint FUN_1800be050(longlong param_1,float param_2,float param_3)
+
+{
+  longlong lVar1;
+  longlong lVar2;
+  longlong *plVar3;
+  int iVar4;
+  undefined4 uVar5;
+  int *piVar6;
+  ulonglong uVar7;
+  int iVar8;
+  uint uVar9;
+  float fVar10;
+  undefined4 in_stack_ffffffffffffffec;
+  undefined1 in_stack_fffffffffffffff0;
+  
+  if (*(longlong *)(param_1 + 0x40) == 0) {
+    piVar6 = (int *)FUN_18000eea0();
+    FUN_18000f980(piVar6,1,L"ASSERT False!!!m_proColor",
+                  L"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\2512_Hardware\\Gaming\\gaming_plugins\\src\\SEPlugin\\SELuminous\\src\\BasicLightingCore\\Animation\\AnimationColorPulse.cpp"
+                  ,CONCAT44(in_stack_ffffffffffffffec,0x12),in_stack_fffffffffffffff0);
+  }
+  else if ((((*(float *)(param_1 + 0x1c) <= param_2) &&
+            (param_2 < *(float *)(param_1 + 0x1c) + *(float *)(param_1 + 0x24))) &&
+           (*(float *)(param_1 + 0x20) <= param_3)) &&
+          (param_3 < *(float *)(param_1 + 0x20) + *(float *)(param_1 + 0x28))) {
+    uVar9 = *(uint *)(param_1 + 0x5c);
+    uVar7 = FUN_1800bb130(param_1);
+    if ((char)uVar7 != '\0') {
+      lVar1 = (*(longlong **)(param_1 + 0x40))[1];
+      lVar2 = **(longlong **)(param_1 + 0x40);
+      if (lVar2 == lVar1) {
+        uVar9 = 0;
+      }
+      else {
+        uVar7 = lVar1 - lVar2 >> 2;
+        iVar4 = 0;
+        if ((ulonglong)(longlong)*(int *)(param_1 + 0x58) < uVar7) {
+          iVar4 = *(int *)(param_1 + 0x58);
+        }
+        if (uVar7 <= (ulonglong)(longlong)iVar4) {
+                    /* WARNING: Subroutine does not return */
+          FUN_1800b9440();
+        }
+        uVar9 = *(uint *)(lVar2 + (longlong)iVar4 * 4);
+      }
+    }
+    if (*(longlong *)(param_1 + 0x40) == 0) {
+      piVar6 = (int *)FUN_18000eea0();
+      FUN_18000f980(piVar6,1,L"ASSERT False!!!m_proColor",
+                    L"C:\\ProgramData\\Jenkins\\.jenkins\\workspace\\2512_Hardware\\Gaming\\gaming_plugins\\src\\SEPlugin\\SELuminous\\src\\BasicLightingCore\\Animation\\AnimationColorPulse.cpp"
+                    ,CONCAT44(in_stack_ffffffffffffffec,0x1d),in_stack_fffffffffffffff0);
+      return 1;
+    }
+    iVar4 = *(int *)(param_1 + 0xc);
+    if (*(int *)(param_1 + 8) <= iVar4) {
+      uVar7 = FUN_1800bb130(param_1);
+      plVar3 = *(longlong **)(param_1 + 0x40);
+      iVar8 = (int)plVar3[3];
+      if ((char)uVar7 == '\0') {
+        if (*(int *)(param_1 + 0x60) != iVar8) {
+          *(int *)(param_1 + 0x60) = iVar8;
+          uVar5 = FUN_1800b8820();
+          *(undefined4 *)(param_1 + 0x5c) = uVar5;
+        }
+      }
+      else {
+        if (*(int *)(param_1 + 0x60) != iVar8) {
+          *(int *)(param_1 + 0x58) = *(int *)(param_1 + 0x58) + 1;
+          *(int *)(param_1 + 0x60) = iVar8;
+        }
+        if ((int)(plVar3[1] - *plVar3 >> 2) <= *(int *)(param_1 + 0x58)) {
+          *(undefined4 *)(param_1 + 0x58) = 0;
+        }
+      }
+      iVar8 = 0;
+      if (0 < *(int *)(param_1 + 8)) {
+        iVar8 = *(int *)(param_1 + 8);
+      }
+      fVar10 = (float)iVar8 / (float)iVar4;
+      uVar9 = ((int)((float)(uVar9 >> 0x10 & 0xff) * fVar10) << 8 |
+              (int)((float)(uVar9 >> 8 & 0xff) * fVar10)) << 8 |
+              (int)((float)(uVar9 & 0xff) * fVar10);
+    }
+    return uVar9;
+  }
+  return 0;
+}
+

@@ -1,0 +1,9 @@
+/target
+/diagnostics/legion_lighting_probe/*.o
+/diagnostics/legion_lighting_probe/*.ko
+/diagnostics/legion_lighting_probe/*.mod
+/diagnostics/legion_lighting_probe/*.mod.c
+/diagnostics/legion_lighting_probe/.*.cmd
+/diagnostics/legion_lighting_probe/Module.symvers
+/diagnostics/legion_lighting_probe/modules.order
+__pycache__/

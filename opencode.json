@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "servers": {
+      "rea": {
+        "type": "local",
+        "command": [
+          "/usr/bin/node",
+          "/home/paulmckinney/.npm-global/lib/node_modules/rea-agents/scripts/rea.mjs",
+          "mcp"
+        ]
+      }
+    }
+  }
+}

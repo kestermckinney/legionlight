@@ -1,0 +1,128 @@
+
+# DSDT.dsl lines 27194–27241
+27194:             Name (LTT0, Package (0x02)
+27195:             {
+27196:                 Package (0x07)
+27197:                 {
+27198:                     Zero, 
+27199:                     Zero, 
+27200:                     0x09, 
+27201:                     0x03, 
+27202:                     Zero, 
+27203:                     0x03, 
+27204:                     One
+27205:                 }, 
+27206: 
+27207:                 Package (0x07)
+27208:                 {
+27209:                     0x04, 
+27210:                     One, 
+27211:                     One, 
+27212:                     0x04, 
+27213:                     One, 
+27214:                     0x04, 
+27215:                     One
+27216:                 }
+27217:             })
+27218:             Name (LTT1, Package (0x02)
+27219:             {
+27220:                 Package (0x07)
+27221:                 {
+27222:                     Zero, 
+27223:                     Zero, 
+27224:                     0x07, 
+27225:                     0x05, 
+27226:                     Zero, 
+27227:                     0x04, 
+27228:                     0x03
+27229:                 }, 
+27230: 
+27231:                 Package (0x07)
+27232:                 {
+27233:                     0x04, 
+27234:                     One, 
+27235:                     One, 
+27236:                     0x04, 
+27237:                     One, 
+27238:                     0x04, 
+27239:                     One
+27240:                 }
+27241:             })
+
+# DSDT.dsl lines 27266–27289
+27266:             Method (GLTT, 1, NotSerialized)
+27267:             {
+27268:                 If ((^^PCI0.LPC0.EC0.KB01 == One))
+27269:                 {
+27270:                     Local1 = DerefOf (LTT0 [ToInteger (Arg0)])
+27271:                 }
+27272:                 ElseIf ((^^PCI0.LPC0.EC0.KB24 == One))
+27273:                 {
+27274:                     Local1 = DerefOf (LTT1 [ToInteger (Arg0)])
+27275:                 }
+27276:                 Else
+27277:                 {
+27278:                     Local1 = DerefOf (LTT0 [ToInteger (Arg0)])
+27279:                 }
+27280: 
+27281:                 C000 = DerefOf (Local1 [Zero])
+27282:                 C001 = DerefOf (Local1 [One])
+27283:                 C002 = DerefOf (Local1 [0x02])
+27284:                 C003 = DerefOf (Local1 [0x03])
+27285:                 C004 = DerefOf (Local1 [0x04])
+27286:                 C005 = DerefOf (Local1 [0x05])
+27287:                 C006 = DerefOf (Local1 [0x06])
+27288:                 Return (LT00) /* \_SB_.GZFD.LT00 */
+27289:             }
+
+# DSDT.dsl lines 29462–29465
+29462:             Method (WQA8, 1, NotSerialized)
+29463:             {
+29464:                 Return (GLTT (Arg0))
+29465:             }
+
+# DSDT.dsl lines 31362–31377
+31362:                     If ((DEV0 == 0x06))
+31363:                     {
+31364:                         If ((FEA0 == One))
+31365:                         {
+31366:                             Return (LIGC) /* \LIGC */
+31367:                         }
+31368: 
+31369:                         If ((FEA0 == 0x02))
+31370:                         {
+31371:                             Return (0xC615048D)
+31372:                         }
+31373: 
+31374:                         If ((FEA0 == 0x03))
+31375:                         {
+31376:                             Return (0xC615048D)
+31377:                         }
+
+# DSDT.dsl lines 32244–32269
+32244:                     {
+32245:                         If ((FEA1 == One))
+32246:                         {
+32247:                             If ((ToInteger (DAT1) == Zero))
+32248:                             {
+32249:                                 Local0 = Zero
+32250:                                 CUST = Local0
+32251:                                 CSMI (0xC5, 0x05)
+32252:                                 LIGC = Local0
+32253:                                 Return (One)
+32254:                             }
+32255:                             ElseIf ((ToInteger (DAT1) == One))
+32256:                             {
+32257:                                 Local0 = One
+32258:                                 CUST = Local0
+32259:                                 CSMI (0xC5, 0x05)
+32260:                                 LIGC = Local0
+32261:                                 Return (One)
+32262:                             }
+32263:                             Else
+32264:                             {
+32265:                                 Return (Zero)
+32266:                             }
+32267:                         }
+32268:                     }
+32269: 

@@ -1,0 +1,24 @@
+{
+  "device": "048d:c615",
+  "ownership_probe_test": {
+    "vendor_A1": "dark",
+    "LampArray": "red",
+    "saved_profile_unchanged": true
+  },
+  "direct_test_without_ownership_probe": {
+    "LampArray": "solid blue",
+    "saved_profile_unchanged": true
+  },
+  "production_Rust_player_preview": {
+    "palette": [
+      "FF0000",
+      "00FF00",
+      "0000FF"
+    ],
+    "visible_result": "User confirmed all three colours fade",
+    "saved_profile_unchanged": true
+  },
+  "custom_palette_firmware_fallback": "First colour, static",
+  "requires_app_running": true,
+  "requires_privileged_helper": false
+}

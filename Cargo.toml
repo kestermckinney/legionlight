@@ -1,0 +1,51 @@
+[package]
+name = "legion_light"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+description = "Keyboard backlight and performance control for Lenovo Legion laptops"
+license = "MIT"
+
+# Keep the CLI as the default for builds without the optional GUI.
+default-run = "legion_light_ctl"
+
+[dependencies]
+# xattr 0.2 (through GPUI) requires ENOATTR, removed in newer libc.
+libc = "=0.2.186"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2"
+
+# Phase 2 (the GPUI app) adds these. They are deliberately not wired up yet so the
+# Phase 0/1 tool builds in seconds and needs no GPU/Wayland stack:
+#   gpui = "0.2.2"
+#   async-channel = "2"
+#   futures-lite = "2"
+#   dirs = "5"
+#   log = "0.4"
+#   env_logger = "0.10"
+
+[[bin]]
+name = "legion_light_ctl"
+path = "src/bin/legion_light_ctl.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
+panic = "abort"
+codegen-units = 1
+
+[features]
+default = []
+gui = ["dep:gpui"]
+gui-tests = ["gui", "gpui/test-support"]
+
+[dependencies.gpui]
+version = "=0.2.2"
+optional = true
+
+[[bin]]
+name = "legion_light"
+path = "src/main.rs"
+required-features = ["gui"]

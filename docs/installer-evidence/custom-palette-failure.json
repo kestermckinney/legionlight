@@ -1,0 +1,23 @@
+{
+  "active_profile": 3,
+  "wire_effect": 4,
+  "speed": 2,
+  "colour_type": 2,
+  "colour_count": 2,
+  "colours": [
+    [
+      88,
+      5,
+      255
+    ],
+    [
+      0,
+      80,
+      255
+    ]
+  ],
+  "key_count": 1,
+  "key_id": 1,
+  "visible_result": "User reports flickering first colour only",
+  "vendor_live_red_valid_profile": "User reports dark; original CC unchanged after restoration"
+}
