@@ -11,7 +11,7 @@ fn main() {
             titlebar: Some(TitlebarOptions { title: Some("Legion Light".into()), appears_transparent: !view::NATIVE_FRAME, ..Default::default() }),
             window_decorations: Some(if view::NATIVE_FRAME { WindowDecorations::Server } else { WindowDecorations::Client }),
             window_background: if view::NATIVE_FRAME { WindowBackgroundAppearance::Opaque } else { WindowBackgroundAppearance::Transparent },
-            app_id: Some("io.github.paulmckinney.LegionLight".into()),
+            app_id: Some("io.gitlab.kestermckinney.LegionLight".into()),
             ..Default::default()
         }, |window, cx| {
             let view = cx.new(|cx| app::LightingApp::new(window, cx));

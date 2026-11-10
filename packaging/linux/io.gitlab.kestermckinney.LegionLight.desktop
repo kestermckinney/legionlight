@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Legion Light
+GenericName=Keyboard Backlight Control
+Comment=Keyboard backlight colour and effects for Lenovo Legion laptops
+Exec=legion_light
+Icon=io.gitlab.kestermckinney.LegionLight
+Categories=Settings;HardwareSettings;
+Keywords=keyboard;backlight;rgb;lenovo;legion;
+Terminal=false
+StartupNotify=true

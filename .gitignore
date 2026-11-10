@@ -7,3 +7,10 @@
 /diagnostics/legion_lighting_probe/Module.symvers
 /diagnostics/legion_lighting_probe/modules.order
 __pycache__/
+.release-secrets/
+packaging/linux/flatpak-build/
+packaging/linux/flatpak-repo/
+packaging/linux/.*.resolved.yml
+packaging/linux/*.flatpak
+.flatpak-builder/
+public/

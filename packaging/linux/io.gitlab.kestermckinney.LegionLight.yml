@@ -1,0 +1,47 @@
+app-id: io.gitlab.kestermckinney.LegionLight
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: legion_light
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # --device=all also covers GPU (dri) access. The keyboard controller is a /dev/hidraw node (USB 048d:c615). Flatpak has
+  # no narrower device permission than --device=all for hidraw. The app opens
+  # only the node whose identity and HID descriptor match, and it still needs
+  # the host udev rule (packaging/70-legionlight.rules) to be allowed to open it.
+  - --device=all
+
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/legionlight/cargo
+
+modules:
+  - name: legionlight
+    buildsystem: simple
+    build-options:
+      # Cargo fetches crates during the build. This is a self-hosted repo, not
+      # Flathub, so a network build is acceptable; Flathub would need
+      # flatpak-cargo-generator offline sources.
+      build-args:
+        - --share=network
+    build-commands:
+      - cargo build --release --locked --features gui --bin legion_light --bin legion_light_ctl
+      - install -Dm755 target/release/legion_light /app/bin/legion_light
+      - install -Dm755 target/release/legion_light_ctl /app/bin/legion_light_ctl
+      - install -Dm644 packaging/linux/io.gitlab.kestermckinney.LegionLight.desktop /app/share/applications/io.gitlab.kestermckinney.LegionLight.desktop
+      - install -Dm644 packaging/linux/io.gitlab.kestermckinney.LegionLight.metainfo.xml /app/share/metainfo/io.gitlab.kestermckinney.LegionLight.metainfo.xml
+      - install -Dm644 packaging/linux/icons/scalable/io.gitlab.kestermckinney.LegionLight.svg /app/share/icons/hicolor/scalable/apps/io.gitlab.kestermckinney.LegionLight.svg
+      - for s in 64 128 256 512; do install -Dm644 packaging/linux/icons/${s}x${s}/io.gitlab.kestermckinney.LegionLight.png /app/share/icons/hicolor/${s}x${s}/apps/io.gitlab.kestermckinney.LegionLight.png; done
+      - install -Dm644 packaging/70-legionlight.rules /app/share/legionlight/70-legionlight.rules
+    sources:
+      # build-flatpak.sh and CI overwrite this commit with the release tag's SHA.
+      # LL_REF=local swaps it for the working tree (see build-flatpak.sh).
+      - type: git
+        url: https://gitlab.com/kestermckinney/legionlight.git
+        commit: bb7631085a52e0923875c13044e8ddbc98f431a2

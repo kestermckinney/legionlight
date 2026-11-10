@@ -1,0 +1,8 @@
+[Flatpak Repo]
+Title=Legion Light
+Url=https://kestermckinney.gitlab.io/legionlight/flatpak/
+Homepage=https://gitlab.com/kestermckinney/legionlight
+Comment=Keyboard backlight control for Lenovo Legion laptops
+Description=Official Flatpak repository for Legion Light. Add this remote to install Legion Light and receive updates via `flatpak update`.
+Icon=https://kestermckinney.gitlab.io/legionlight/flatpak/icon.png
+GPGKey=mDMEavKMmRYJKwYBBAHaRw8BAQdAG5fhD42iL4utUdkBdjCi7M9qezcfq1e7YDuupiw5as60JExlZ2lvbkxpZ2h0IEZsYXRwYWsgU2lnbmluZyAoR2l0TGFiKYiTBBMWCgA7FiEExcfhptvKKgo2kTWI02qIsUfJ++8FAmryjJkCGwMFCwkIBwICIgIGFQoJCAsCBBYCAwECHgcCF4AACgkQ02qIsUfJ+++tjQEAvjKz/nVHlyN29EPbiivNQkYvqvJupdHpxuyz7UpK7JsA/0KKyeFW5AG3MmgccTKYOaN+ILrAjbkKu7JY/bonQwQP

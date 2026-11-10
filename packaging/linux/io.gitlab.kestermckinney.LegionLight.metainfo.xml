@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.gitlab.kestermckinney.LegionLight</id>
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>MIT</project_license>
+
+  <name>Legion Light</name>
+  <summary>Keyboard backlight control for Lenovo Legion laptops</summary>
+
+  <developer id="io.gitlab.kestermckinney">
+    <name>Kester McKinney</name>
+  </developer>
+
+  <description>
+    <p>
+      Legion Light sets the keyboard backlight colour, brightness and effect on
+      Lenovo Legion laptops with a one-zone RGB keyboard, and edits the three
+      lighting profiles that Fn+Space cycles through.
+    </p>
+    <p>
+      Static, Breathe and Lenovo colour effects run in the keyboard firmware and
+      keep working after the app exits. Custom palettes fade through two to four
+      colours while the app is running.
+    </p>
+    <p>
+      Device access needs a udev rule installed on the host; see the project page.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.gitlab.kestermckinney.LegionLight.desktop</launchable>
+
+  <url type="homepage">https://gitlab.com/kestermckinney/legionlight</url>
+  <url type="bugtracker">https://gitlab.com/kestermckinney/legionlight/-/issues</url>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-11-09"/>
+  </releases>
+
+  <provides>
+    <binary>legion_light</binary>
+  </provides>
+</component>

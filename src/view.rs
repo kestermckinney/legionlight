@@ -2,6 +2,7 @@
 use gpui::{prelude::*, *};
 use legion_light::model::{Effect, Rgb};
 use crate::app::LightingApp;
+use std::sync::{Arc, OnceLock};
 
 pub const NATIVE_FRAME: bool = cfg!(any(target_os = "macos", target_os = "windows"));
 const BG: u32 = 0x0D1117;
@@ -13,6 +14,11 @@ const TEXT: u32 = 0xE6EDF3;
 const MUTED: u32 = 0x9198A1;
 const ACCENT: u32 = 0x2F6FEB;
 const FOCUS: u32 = 0x6CA4FF;
+/// The application icon, embedded so it shows in the header without installed assets.
+fn app_icon() -> Arc<Image> {
+    static ICON: OnceLock<Arc<Image>> = OnceLock::new();
+    ICON.get_or_init(|| Arc::new(Image::from_bytes(ImageFormat::Png, include_bytes!("../assets/legion-light-64.png").to_vec()))).clone()
+}
 fn button(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Stateful<Div> {
     div().id(id).h(px(32.)).px(px(12.)).flex().items_center().justify_center()
         .rounded(px(6.)).border_1().border_color(rgb(BORDER)).cursor_pointer()
@@ -31,7 +37,8 @@ impl LightingApp {
             .on_mouse_down(MouseButton::Left, |event,window,_| {
                 if event.click_count >= 2 { window.zoom_window(); } else { window.start_window_move(); }
             })
-            .child(div().w(px(128.)).flex_none())
+            .child(div().w(px(128.)).flex_none().flex().items_center()
+                .child(img(app_icon()).id("app-icon").size(px(20.)).flex_none()))
             .child(div().flex_1().text_center().font_weight(FontWeight::SEMIBOLD).child("Legion Light"))
             .child(control("window-minimize","–").on_click(|_,window,_|window.minimize_window()))
             .child(control("window-maximize","□").on_click(|_,window,_|window.zoom_window()))

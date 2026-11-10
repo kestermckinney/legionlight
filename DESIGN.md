@@ -500,11 +500,11 @@ broader `/etc/udev/rules.d/60-legionaura.rules` granting `MODE="0666"` on the sa
 IDs; the package replaces it.
 
 **Phase 3 — daemon for the rest.** `legion_lightd`, a system service, exposes
-`io.github.paulmckinney.LegionLight` on the system bus via `zbus`:
+`io.gitlab.kestermckinney.LegionLight` on the system bus via `zbus`:
 `SetPlatformProfile(s)`, `SetConservation(b)`, `SetFnLock(b)`, `SetFanMode(s)`,
 `GetTelemetry() -> a{sv}`, plus `Apply(LightingState)` so lighting can move behind
 the same door and the GUI can drop the udev rule. Polkit action
-`io.github.paulmckinney.LegionLight.admin`.
+`io.gitlab.kestermckinney.LegionLight.admin`.
 
 The daemon also exists for two things the GUI cannot do on its own: re-applying
 lighting after resume (firmware resets the keyboard on S3), and owning the device
@@ -599,10 +599,10 @@ Native RPM for Fedora. Flatpak is a poor fit: it cannot reach `hidraw` without
 /usr/libexec/legion_lightd                     (Phase 3)
 /usr/lib/systemd/system/legion_lightd.service  (Phase 3)
 /usr/lib/udev/rules.d/71-legionlight.rules
-/usr/share/polkit-1/actions/io.github.paulmckinney.LegionLight.policy   (Phase 3)
+/usr/share/polkit-1/actions/io.gitlab.kestermckinney.LegionLight.policy   (Phase 3)
 /usr/share/applications/legionlight.desktop
 /usr/share/icons/hicolor/.../legionlight.png
-/usr/share/metainfo/io.github.paulmckinney.LegionLight.metainfo.xml
+/usr/share/metainfo/io.gitlab.kestermckinney.LegionLight.metainfo.xml
 ```
 
 `legionlight.desktop` follows SeeMyMac's file exactly:
