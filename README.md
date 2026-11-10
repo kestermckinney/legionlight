@@ -1,4 +1,6 @@
-# LegionForGnome
+<img src="assets/legion-light.svg" alt="Legion Light icon" width="96" align="right">
+
+# Legion Light
 
 Keyboard backlight control for the Lenovo Legion 5 15AHP11 (`83Q7`, USB
 `048d:c615`), in Rust with an optional GPUI desktop app.
@@ -7,6 +9,30 @@ The laptop's firmware confirms **one RGB zone**. Static colour and brightness
 have been confirmed in both the diagnostic command and the GUI. Effects and
 profile encodings come from Lenovo's Windows installer; see
 [installer evidence](docs/installer-analysis.md).
+
+## Install with Flatpak
+
+Requires [Flatpak](https://flatpak.org/setup/) with the Flathub remote (for the
+runtime). Add the Legion Light repository, then install and run:
+
+```bash
+flatpak remote-add --user --if-not-exists legionlight \
+  https://kestermckinney.gitlab.io/legionlight/flatpak/legionlight.flatpakrepo
+flatpak install --user legionlight io.gitlab.kestermckinney.LegionLight
+flatpak run io.gitlab.kestermckinney.LegionLight
+```
+
+Update with `flatpak update`. Or install the `LegionLight.flatpak` bundle from the
+latest release with `flatpak install --user LegionLight.flatpak`.
+
+The Flatpak cannot grant itself access to the keyboard. Install the udev rule on the
+host once, then reconnect the keyboard or reboot (see [Device access](#device-access)):
+
+```bash
+curl -O https://gitlab.com/kestermckinney/legionlight/-/raw/main/packaging/70-legionlight.rules
+sudo install -m644 70-legionlight.rules /etc/udev/rules.d/
+sudo udevadm control --reload && sudo udevadm trigger
+```
 
 ## Build and run
 
