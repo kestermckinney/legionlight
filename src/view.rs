@@ -125,6 +125,8 @@ impl LightingApp {
             .child(div().flex().gap_2().flex_wrap()
                 .child(button("apply","Apply profile").bg(rgb(ACCENT))
                     .on_click(cx.listener(|app,_,_,cx|app.apply(cx))))
+                .child(button("read-fw","Read profiles from keyboard")
+                    .on_click(cx.listener(|app,_,_,cx|app.read_profiles(cx))))
                 .child(button("save-fn","Save Fn+Space profiles")
                     .on_click(cx.listener(|app,_,_,cx|app.save_profiles(cx)))))
             .child(label("Profile tabs edit drafts. Changes apply to that slot; Save Fn+Space writes all three."))
@@ -150,7 +152,7 @@ impl Render for LightingApp {
             div().flex().flex_col().gap_3().child("Lenovo Legion 5 · OneZone RGB")
                 .child(label("048d:c615 · model 83Q7 · firmware profiles 1–3"))
                 .child("Static colour and brightness are confirmed on this keyboard. Native pulse and hotkey profiles follow Lenovo’s Windows code. Custom palettes play through LampArray while the app stays open.")
-                .child("Opening the app and loading drafts do not write lighting. Applying saves the selected profile; Save Fn+Space and Lenovo defaults replace all three.")
+                .child("Opening the app reads all three profiles from the firmware (briefly stepping through each slot, then restoring the active one) and shows them; it changes no stored settings. Applying saves the selected profile; Save Fn+Space and Lenovo defaults replace all three.")
                 .child(label("Ctrl+Q exits · Tab focuses the colour field · Enter sets the colour"))
                 .child(label("Window styling follows SeeMyMac’s design handoff and Linux header controls."))
         }else{self.editor(cx)};

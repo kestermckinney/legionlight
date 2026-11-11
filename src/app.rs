@@ -42,11 +42,28 @@ impl LightingApp {
         window.focus(&focus);
         let font = cx.text_system().all_font_names().into_iter().find(|n| n == "Inter").map(SharedString::from);
         let initial_colour = if state.effect == Effect::CustomCycle { state.palette[0] } else { state.zones[0] };
+        let worker = Worker::start();
+        let _ = worker.commands.send(Command::ReadProfiles);
         Self { colour_text: initial_colour.hex(), cursor: 7, state, profiles,
             palette_index: 0, editing: false, select_all: false, focus, font,
-            quit_requested: false, status: startup_status, about: false, worker: Worker::start() }
+            quit_requested: false, status: "Reading profiles from the keyboard…".to_string(), about: false, worker }
+    }
+    pub fn read_profiles(&mut self, cx: &mut Context<Self>) {
+        if self.quit_requested { return; }
+        self.status = match self.worker.commands.send(Command::ReadProfiles) {
+            Ok(()) => "Reading profiles from the keyboard…".into(), Err(error) => error.to_string()
+        };
+        cx.notify();
     }
     pub fn poll_worker(&mut self, cx: &mut Context<Self>) {
+        while let Ok(firmware) = self.worker.loaded.try_recv() {
+            self.profiles.apply_firmware(&firmware);
+            self.state = self.profiles.profiles[self.profiles.selected].clone();
+            self.palette_index = 0;
+            self.editing = false;
+            self.sync_text();
+            cx.notify();
+        }
         while let Ok(status) = self.worker.events.try_recv() {
             if status == SHUTDOWN_COMPLETE && self.quit_requested {
                 self.status = "Keyboard playback stopped".into();

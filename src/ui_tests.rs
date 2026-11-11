@@ -11,7 +11,7 @@ fn new_app(window: &mut Window, cx: &mut Context<LightingApp>) -> LightingApp {
     let (commands, receiver)=std::sync::mpsc::channel();
     drop(receiver);
     let (_,events)=std::sync::mpsc::channel();
-    app.worker=Worker { commands,events };
+    app.worker=Worker { commands,events,loaded: std::sync::mpsc::channel().1 };
     app
 }
 fn draw(cx: &mut VisualTestContext) { let _ = cx.update(|window,cx|window.draw(cx)); }
@@ -76,7 +76,7 @@ fn exit_waits_for_worker_cleanup_acknowledgement(cx: &mut TestAppContext) {
     let (commands,receive)=std::sync::mpsc::channel();
     let (send,events)=std::sync::mpsc::channel();
     cx.update(|_,cx|app.update(cx,|app,cx| {
-        app.worker=Worker { commands,events };
+        app.worker=Worker { commands,events,loaded: std::sync::mpsc::channel().1 };
         app.quit(cx);
         assert!(app.quit_requested);
         assert_eq!(app.status,"Returning control to the keyboard…");

@@ -313,6 +313,23 @@ impl ProfileSet {
         }
         Ok(())
     }
+    /// Replace the displayed settings with what the firmware reports. The custom
+    /// palette is not stored in firmware, so a draft custom slot is kept while its
+    /// steady fallback colour still matches the firmware's.
+    pub fn apply_firmware(&mut self, fw: &crate::lighting::protocol::FirmwareProfiles) {
+        for (state, slot) in self.profiles.iter_mut().zip(&fw.slots) {
+            let keeps_palette = state.effect == Effect::CustomCycle && slot.enabled
+                && slot.effect == Effect::Static && state.palette.first().copied() == slot.colour;
+            if slot.enabled && !keeps_palette {
+                state.effect = slot.effect;
+                if (1..=3).contains(&slot.speed) { state.effect_speed = slot.speed; }
+                if let Some(colour) = slot.colour { state.zones[0] = colour; }
+            }
+            state.enabled = slot.enabled;
+            state.brightness = fw.brightness.min(BRIGHTNESS_MAX);
+        }
+        self.selected = fw.selected.min(2);
+    }
     pub fn from_json(bytes: &[u8]) -> Result<Self, String> {
         #[derive(Deserialize)]
         #[serde(untagged)]
