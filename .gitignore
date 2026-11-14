@@ -6,3 +6,4 @@ packaging/linux/.*.resolved.yml
 packaging/linux/*.flatpak
 .flatpak-builder/
 public/
+__pycache__/
