@@ -104,6 +104,15 @@ pub fn select_reports(slot: u8) -> Vec<[u8; REPORT_LEN]> {
     vec![packet(CMD_SELECT_PROFILE, &[slot]), packet(0xD0, &[0xDC, slot])]
 }
 
+/// Set the backlight level alone (`CE`). Level 0 blanks the panel without touching
+/// the stored profiles, so restoring the previous level brings the same lighting back.
+pub fn brightness_report(level: u8) -> Result<[u8; REPORT_LEN], EncodeError> {
+    if level > BRIGHTNESS_MAX {
+        return Err(EncodeError::Brightness { value: level });
+    }
+    Ok(packet(CMD_BRIGHTNESS, &[level]))
+}
+
 /// What the firmware stores for one slot. The custom palette is never stored.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FirmwareSlot {
@@ -161,6 +170,8 @@ fn effect_profile(profile: u8, effect: Option<Effect>, c: Rgb, effect_speed: u8,
         // C615 native playback only uses the first custom colour. Save a steady
         // fallback; the worker plays the full palette through LampArray.
         Some(Effect::CustomCycle) => (11, 0, 2, true),
+        // Random blend likewise stores its starting colour as the fallback.
+        Some(Effect::RandomBlend) => (11, 0, 2, true),
         None => (0xFF, 0, 0, false),
     };
     let mut payload = vec![profile, 1, 1, 1, 6,

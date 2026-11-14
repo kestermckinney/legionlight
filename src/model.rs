@@ -21,6 +21,12 @@ pub const BRIGHTNESS_OFF: u8 = 0;
 /// Lenovo's own shipped default (`NBLightingConfig/brightness.json`).
 pub const BRIGHTNESS_DEFAULT: u8 = 7;
 
+/// Milliseconds between steps of the random blend: each step nudges R, G and B
+/// by one toward a randomly chosen colour.
+pub const BLEND_INTERVAL_MIN: u16 = 10;
+pub const BLEND_INTERVAL_MAX: u16 = 2000;
+pub const BLEND_INTERVAL_DEFAULT: u16 = 50;
+
 /// Schema version of the persisted document.
 pub const STATE_VERSION: u8 = 1;
 
@@ -92,6 +98,8 @@ pub enum Effect {
     Breathe,
     ColourCycle,
     CustomCycle,
+    /// Software effect: drifts gradually between random colours.
+    RandomBlend,
 }
 impl Effect {
     pub fn label(self) -> &'static str {
@@ -100,7 +108,12 @@ impl Effect {
             Self::Breathe => "Breathe",
             Self::ColourCycle => "Lenovo colours",
             Self::CustomCycle => "Custom palette",
+            Self::RandomBlend => "Random blend",
         }
+    }
+    /// Played by software over LampArray rather than by the firmware.
+    pub fn is_live(self) -> bool {
+        matches!(self, Self::CustomCycle | Self::RandomBlend)
     }
 }
 
@@ -123,9 +136,12 @@ pub struct LightingState {
     pub palette: Vec<Rgb>,
     #[serde(default)]
     pub profile: Option<u8>,
+    #[serde(default = "default_blend_interval")]
+    pub blend_interval_ms: u16,
 }
 
 fn default_effect_speed() -> u8 { 2 }
+fn default_blend_interval() -> u16 { BLEND_INTERVAL_DEFAULT }
 
 // Preserve version-1 presets from the old 24-zone UI by using their first colour.
 fn deserialize_zones<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<[Rgb; ZONE_COUNT], D::Error> {
@@ -147,6 +163,7 @@ impl Default for LightingState {
             zones: [Rgb::OFF; ZONE_COUNT],
             palette: Vec::new(),
             profile: None,
+            blend_interval_ms: BLEND_INTERVAL_DEFAULT,
         }
     }
 }
@@ -181,6 +198,20 @@ impl LightingState {
         Some(self.zones[index - 1])
     }
 
+    /// Enabled with an effect the worker has to play itself.
+    pub fn is_live(&self) -> bool {
+        self.enabled && self.effect.is_live()
+    }
+
+    /// The steady colour stored in firmware for a live effect (and shown when
+    /// the worker is not playing it).
+    pub fn fallback_colour(&self) -> Rgb {
+        match self.effect {
+            Effect::CustomCycle => self.palette.first().copied().unwrap_or(self.zones[0]),
+            _ => self.zones[0],
+        }
+    }
+
     pub fn is_off(&self) -> bool {
         !self.enabled || self.zones.iter().all(|colour| colour.is_off())
     }
@@ -206,6 +237,9 @@ impl LightingState {
         }
         if !(1..=3).contains(&self.effect_speed) {
             return Err("effect speed is outside 1..=3".into());
+        }
+        if !(BLEND_INTERVAL_MIN..=BLEND_INTERVAL_MAX).contains(&self.blend_interval_ms) {
+            return Err(format!("blend interval must be {BLEND_INTERVAL_MIN}–{BLEND_INTERVAL_MAX} ms"));
         }
         if self.version != STATE_VERSION {
             return Err(format!("unsupported state version {} (expected {STATE_VERSION})", self.version));
@@ -313,13 +347,13 @@ impl ProfileSet {
         }
         Ok(())
     }
-    /// Replace the displayed settings with what the firmware reports. The custom
-    /// palette is not stored in firmware, so a draft custom slot is kept while its
-    /// steady fallback colour still matches the firmware's.
+    /// Replace the displayed settings with what the firmware reports. Live effects
+    /// (custom palette, random blend) are not stored in firmware, so a draft live
+    /// slot is kept while its steady fallback colour still matches the firmware's.
     pub fn apply_firmware(&mut self, fw: &crate::lighting::protocol::FirmwareProfiles) {
         for (state, slot) in self.profiles.iter_mut().zip(&fw.slots) {
-            let keeps_palette = state.effect == Effect::CustomCycle && slot.enabled
-                && slot.effect == Effect::Static && state.palette.first().copied() == slot.colour;
+            let keeps_palette = state.effect.is_live() && slot.enabled
+                && slot.effect == Effect::Static && Some(state.fallback_colour()) == slot.colour;
             if slot.enabled && !keeps_palette {
                 state.effect = slot.effect;
                 if (1..=3).contains(&slot.speed) { state.effect_speed = slot.speed; }

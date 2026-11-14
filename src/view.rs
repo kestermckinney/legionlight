@@ -65,13 +65,21 @@ impl LightingApp {
             .child(div().flex().flex_wrap().gap_2().children([
                 ("static",Effect::Static),("breathe",Effect::Breathe),
                 ("lenovo-colours",Effect::ColourCycle),("custom-palette",Effect::CustomCycle),
+                ("random-blend",Effect::RandomBlend),
             ].into_iter().map(|(id,e)|button(id,e.label())
                 .bg(rgb(if self.state.enabled && self.state.effect == e {ACCENT}else{SURFACE}))
                 .on_click(cx.listener(move |app,_,_,cx|app.effect(e,cx)))))
                 .child(button("off","Off").bg(rgb(if !self.state.enabled {ACCENT}else{SURFACE}))
                     .on_click(cx.listener(|app,_,_,cx|{app.state.enabled=false;app.apply(cx);}))))
             .child(label("One RGB zone · native effects keep running after the app closes"));
-        if self.state.effect != Effect::Static {
+        if self.state.effect == Effect::RandomBlend {
+            content = content.child(label("App playback · nudges R, G and B one step toward random colours. Fn+Space stores the colour below."))
+                .child(div().flex().flex_wrap().items_center().gap_2().child(label("Step every"))
+                .children([20u16,50,100,250,500].into_iter().map(|ms|
+                    button(("blend-ms",ms as usize),format!("{ms} ms"))
+                        .bg(rgb(if self.state.blend_interval_ms==ms {ACCENT}else{SURFACE}))
+                        .on_click(cx.listener(move |app,_,_,cx|{app.state.blend_interval_ms=ms;app.state.enabled=true;app.apply(cx);})))));
+        } else if self.state.effect != Effect::Static {
             content = content.child(div().flex().items_center().gap_2().child(label("Speed"))
                 .children([(1u8,"Slow"),(2,"Normal"),(3,"Fast")].into_iter().map(|(speed,text)|
                     button(("speed",speed as usize),text)

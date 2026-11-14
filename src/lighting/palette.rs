@@ -1,8 +1,9 @@
-//! App-driven palette playback using the experimentally verified standard LampArray path.
-//! Frames never write CB profiles. The saved profile holds the first colour as fallback.
-use std::{thread, time::{Duration, Instant}};
+//! App-driven playback of the live effects (custom palette and random blend) using
+//! the experimentally verified standard LampArray path. Frames never write CB
+//! profiles. The saved profile holds a steady fallback colour.
+use std::{thread, time::{Duration, Instant, SystemTime, UNIX_EPOCH}};
 use super::{hid, protocol};
-use crate::model::{Effect, LightingState};
+use crate::model::{Effect, LightingState, Rgb};
 
 pub fn palette_period(speed: u8) -> Duration {
     Duration::from_secs(match speed { 1 => 3, 3 => 1, _ => 2 })
@@ -20,6 +21,65 @@ pub fn frame(state: &LightingState, elapsed: Duration) -> [u8; 10] {
     [5,1,0,0,0,0,scale(colour.r),scale(colour.g),scale(colour.b),1]
 }
 
+/// Random blend: every step moves each of R, G and B one unit toward a randomly
+/// chosen target colour, then picks a new target once it is reached.
+pub struct Blend {
+    current: Rgb,
+    target: Rgb,
+    seed: u64,
+}
+impl Blend {
+    pub fn new(start: Rgb, seed: u64) -> Self {
+        let mut blend = Self { current: start, target: start, seed: seed | 1 };
+        blend.target = blend.random_colour();
+        blend
+    }
+    pub fn current(&self) -> Rgb { self.current }
+    pub fn target(&self) -> Rgb { self.target }
+    fn next_random(&mut self) -> u64 {
+        // xorshift64: plenty for picking colours.
+        self.seed ^= self.seed << 13;
+        self.seed ^= self.seed >> 7;
+        self.seed ^= self.seed << 17;
+        self.seed
+    }
+    /// A vivid colour: random hue, high saturation, full value.
+    fn random_colour(&mut self) -> Rgb {
+        let hue = (self.next_random() % 3600) as f64 / 10.0;
+        let saturation = 0.6 + (self.next_random() % 401) as f64 / 1000.0;
+        let chroma = saturation;
+        let x = chroma * (1.0 - ((hue / 60.0) % 2.0 - 1.0).abs());
+        let (r, g, b) = match (hue / 60.0) as u32 {
+            0 => (chroma, x, 0.0), 1 => (x, chroma, 0.0), 2 => (0.0, chroma, x),
+            3 => (0.0, x, chroma), 4 => (x, 0.0, chroma), _ => (chroma, 0.0, x),
+        };
+        let m = 1.0 - chroma;
+        let byte = |v: f64| ((v + m) * 255.0).round().clamp(0.0, 255.0) as u8;
+        Rgb::new(byte(r), byte(g), byte(b))
+    }
+    /// Advance one step and return the new colour.
+    pub fn step(&mut self) -> Rgb {
+        if self.current == self.target {
+            self.target = self.random_colour();
+        }
+        let toward = |from: u8, to: u8| if from < to { from + 1 } else if from > to { from - 1 } else { from };
+        self.current = Rgb::new(toward(self.current.r, self.target.r),
+            toward(self.current.g, self.target.g), toward(self.current.b, self.target.b));
+        self.current
+    }
+}
+
+/// One LampArray frame of `colour` at the profile's brightness.
+pub fn colour_frame(colour: Rgb, brightness: u8) -> [u8; 10] {
+    let intensity = f64::from(brightness) / 9.0;
+    let scale = |channel: u8| (f64::from(channel)*intensity).round().clamp(0.,255.) as u8;
+    [5,1,0,0,0,0,scale(colour.r),scale(colour.g),scale(colour.b),1]
+}
+
+fn seed() -> u64 {
+    SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_nanos() as u64).unwrap_or(0x9E37_79B9_7F4A_7C15)
+}
+
 pub struct Session {
     vendor: hid::Device,
     lamp: hid::Device,
@@ -30,13 +90,14 @@ pub struct Session {
     restore_profile: u8,
     restore_brightness: u8,
     armed: bool,
+    blend: Option<Blend>,
     pub interval: Duration,
 }
 impl Session {
     pub fn begin(state: LightingState) -> Result<Self,String> {
         state.validate()?;
-        if !state.enabled || state.effect != Effect::CustomCycle {
-            return Err("Live playback needs an enabled custom palette".into());
+        if !state.is_live() {
+            return Err("Live playback needs an enabled custom palette or random blend".into());
         }
         let vendor=hid::Device::open_for_write(hid::lighting_node().map_err(|e|e.to_string())?).map_err(|e|e.to_string())?;
         vendor.ensure_lighting().map_err(|e|e.to_string())?;
@@ -47,9 +108,13 @@ impl Session {
             return Err("Expected one programmable keyboard lamp".into());
         }
         let minimum=Duration::from_micros(u32::from_le_bytes(attributes[19..23].try_into().unwrap()) as u64);
+        let (blend,interval)=if state.effect==Effect::RandomBlend {
+            (Some(Blend::new(state.zones[0],seed())),
+                minimum.max(Duration::from_millis(u64::from(state.blend_interval_ms))))
+        } else { (None,minimum.max(Duration::from_millis(50))) };
         let mut session=Self { vendor,lamp, restore_profile:state.profile.unwrap_or(1),
             restore_brightness:state.brightness,state,started:Instant::now(),last_poll:Instant::now(),
-            selected_at_start:0,armed:false,interval:minimum.max(Duration::from_millis(50)) };
+            selected_at_start:0,armed:false,blend,interval };
         session.armed=true; // Any error from this point must release both control paths.
         session.vendor.send(&vendor_packet(0xAA,&[0,0])).map_err(|e|e.to_string())?;
         thread::sleep(Duration::from_millis(150));
@@ -57,8 +122,17 @@ impl Session {
         thread::sleep(Duration::from_millis(50));
         session.selected_at_start=session.query_profile()?;
         session.started=Instant::now();
-        session.lamp.send(&frame(&session.state,Duration::ZERO)).map_err(|e|e.to_string())?;
+        let first=session.next_frame();
+        session.lamp.send(&first).map_err(|e|e.to_string())?;
         Ok(session)
+    }
+    /// The live effect being played.
+    pub fn state(&self) -> &LightingState { &self.state }
+    fn next_frame(&mut self) -> [u8; 10] {
+        match self.blend.as_mut() {
+            Some(blend) => colour_frame(blend.step(), self.state.brightness),
+            None => frame(&self.state, self.started.elapsed()),
+        }
     }
     fn query_profile(&self) -> Result<u8,String> {
         self.vendor.send(&vendor_packet(0xCA,&[0])).map_err(|e|e.to_string())?;
@@ -78,7 +152,8 @@ impl Session {
                 return Ok(false);
             }
         }
-        self.lamp.send(&frame(&self.state,self.started.elapsed())).map_err(|e|e.to_string())?;
+        let next=self.next_frame();
+        self.lamp.send(&next).map_err(|e|e.to_string())?;
         Ok(true)
     }
     pub fn finish(&mut self) -> Result<(),String> {
@@ -114,6 +189,27 @@ mod tests {
         let mut s=LightingState::uniform(Rgb::WHITE).brightness(9);
         s.effect=Effect::CustomCycle;
         s.palette=vec![Rgb::new(255,0,0),Rgb::new(0,255,0),Rgb::new(0,0,255),Rgb::WHITE];s
+    }
+    #[test]
+    fn random_blend_moves_each_channel_by_at_most_one_and_reaches_its_targets() {
+        let mut blend=Blend::new(Rgb::new(10,200,30),42);
+        let mut previous=blend.current();
+        let mut targets_reached=0;
+        for _ in 0..5000 {
+            let target=blend.target();
+            let next=blend.step();
+            for (a,b) in [(previous.r,next.r),(previous.g,next.g),(previous.b,next.b)] {
+                assert!(a.abs_diff(b)<=1);
+            }
+            if next==target { targets_reached+=1; }
+            previous=next;
+        }
+        assert!(targets_reached>=5, "only reached {targets_reached} targets");
+    }
+    #[test]
+    fn colour_frames_scale_with_brightness() {
+        assert_eq!(colour_frame(Rgb::new(90,180,255),9),[5,1,0,0,0,0,90,180,255,1]);
+        assert_eq!(&colour_frame(Rgb::new(90,180,255),3)[6..9],&[30,60,85]);
     }
     #[test]
     fn every_colour_is_sent_and_the_palette_wraps() {
