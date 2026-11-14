@@ -9,8 +9,6 @@
 //! * [`lighting::descriptor`] — the HID report-descriptor reader used as part of
 //!   the device safety gate. Pure.
 //! * [`lighting::hid`] — discovery, identity checks and the ioctl transport.
-//! * [`sysfs`] — read-only firmware and sensor state.
 
 pub mod lighting;
 pub mod model;
-pub mod sysfs;

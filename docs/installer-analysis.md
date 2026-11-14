@@ -5,6 +5,10 @@ executing it. The initial investigation was static; the follow-up below records
 bounded Linux hardware tests. This is not a verified recipe for changing the
 physical lights.
 
+The Python scripts and the C kernel diagnostic this record mentions were one-off
+investigation tools. They were removed once the Rust app implemented the
+protocol; they remain in the Git history (commit `bb76310`).
+
 ## The newer component matters
 
 The installer contains both the older `se/plugins/SELuminousNB/SELuminousNB64.dll`
@@ -117,7 +121,7 @@ Read operations at `0x180082a30` first send the query through the feature-write
 function, then fetch the reply through the feature-read function and wait 50 ms.
 Initializing a Linux GET_FEATURE buffer with a command does not select a query.
 
-The offline [packet generator](installer-evidence/packets.py) reconstructs these
+The offline packet generator reconstructs these
 formats. It never opens a device. Checked fixed prefixes, little-endian IDs,
 payload lengths, 960-byte size, and zero padding. Selected source disassembly is
 in [control-and-live-colour.txt](installer-evidence/control-and-live-colour.txt).
@@ -179,13 +183,13 @@ selects lighting ID 0 (keyboard), and interprets `Lighting_Type` as follows:
 | Bit 0 set; type field 4 | OneZone |
 
 The user exported the laptop's ACPI tables and WMI definitions using the
-[read-only export script](installer-evidence/export-firmware.py).
+read-only export script.
 `DSDT` defines the lighting data block as GUID
 `4DD5BD84-15A9-47E2-AD65-CC61A5C62FD0`, object `A8`, two instances. Query instance
 zero runs `WQA8(0)` → `GLTT(0)`, selecting its table from the live `KB01`/`KB24`
 firmware flags.
 
-The user ran [read-lighting-type.py](installer-evidence/read-lighting-type.py).
+The user ran read-lighting-type.py.
 It temporarily bound the previously unclaimed data block to the stock
 `wmi-bmof` driver, whose probe calls only `wmidev_query_block(wdev, 0, ...)` and
 exports the cached buffer. I checked this in the installed module's disassembly
@@ -222,7 +226,7 @@ Thus USB AA/D0 commands do not exercise the entire Lenovo control path.
 Selected AML is retained in [firmware-lighting-excerpts.txt](installer-evidence/firmware-lighting-excerpts.txt).
 
 The existing Linux driver publishes no userspace control for this feature.
-The [exact-model diagnostic module](../diagnostics/legion_lighting_probe/README.md)
+The exact-model diagnostic module
 builds against the running kernel. Loading it queries only; an explicit root
 write is required to change ownership. It allows only this feature on DMI
 product 83Q7 with the confirmed OneZone descriptor, and attempts to restore the
@@ -262,7 +266,7 @@ fixed colour uses property 5 = 2 and one RGB triple. The transport
 
 A fresh read still shows profile 2, brightness 9, blue, and key count 28 with
 only IDs 1/2/3 nonzero. This differs from the shipped single-key OneZone layout.
-The bounded [static-profile diagnostic](installer-evidence/test-static-onezone.py)
+The bounded static-profile diagnostic
 backs up this exact CC reply before testing a source-derived static red group
 on ID 1. It restores the prior profile and brightness in finally, checks the
 restored CC reply byte-for-byte, and retains all reports in a temporary directory.
@@ -294,7 +298,7 @@ restored. The diagnostic now checks against the expected normalized header
 and also records the strict raw equality separately. Physical blue restoration
 was not independently reported.
 
-[onezone-ctl.py](installer-evidence/onezone-ctl.py) provides the working static
+onezone-ctl.py provides the working static
 sequence for an arbitrary uniform RGB colour and brightness 1–9. It checks
 model and HID identity, backs up queries before colour writes, changes stored
 profile 2, and checks stored readback. Offline syntax and packet regression
@@ -424,7 +428,7 @@ were stored, so the observed failure is not a dropped entry in the encoder.
 A bounded live A1 red test on this now-valid profile (AA1 / D0 04/3 / A1 ID 1
 red / empty A8) produced **dark**, per the user. D0 DC/3 and AA1 were restored;
 CC was byte-for-byte unchanged. Script:
-[valid-profile live test](installer-evidence/test-live-valid-profile.py).
+valid-profile live test.
 No CB profile write or ownership change was made in that test.
 
 Further decompilation confirms OneZone init `0x1800a3b80` opens PID C195
@@ -468,7 +472,7 @@ The script restored `06 01`, AA1, original selection/brightness and D0 DC; CC
 was unchanged. This proves ACPI ownership changes are unnecessary for this
 LampArray path; previous standard-interface tests omitted the AA0 channel
 selection or mixed it with vendor app control. The diagnostic is retained as
-[test-lamparray-direct.py](installer-evidence/test-lamparray-direct.py).
+test-lamparray-direct.py.
 
 The custom palette now uses this verified standard interface. Its saved CB
 profile is a static first-colour fallback, not the faulty multi-colour native

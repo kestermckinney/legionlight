@@ -3,7 +3,7 @@
 Keyboard backlight control for the Lenovo Legion 5 15AHP11 (`83Q7`), in Rust with an optional GPUI desktop app.
 
 The laptop's firmware confirms **one RGB zone**. Static colour and brightness
-have been confirmed in both the diagnostic command and the GUI. Effects and
+have been confirmed in the GUI. Effects and
 profile encodings come from Lenovo's Windows installer; see
 [installer evidence](docs/installer-analysis.md).
 
@@ -49,15 +49,18 @@ desktop app and the GNOME daemon at the same time.
 ## Technical Details
 
 This project consists of several components:
-1. **Command-line tool** (`legion_light_ctl`) - core functionality for interacting with the device
-2. **GUI desktop app** (`legion_light`) - full-featured interface using GPUI  
-3. **Libraries** - shared code for lighting protocols, models, etc.
+1. **GUI desktop app** (`legion_light`) - full-featured interface using GPUI
+2. **Library** (`legion_light`) - lighting protocol, worker and profile model, shared with the GNOME daemon
 
 ### Building
 
 ```
-# Build all components (requires Rust)
-cargo build --release
+# Build the desktop app (requires Rust)
+cargo build --release --features gui
+
+# Run the tests (library, then GPUI view tests)
+cargo test
+cargo test --features gui-tests
 ```
 
 ### Installation

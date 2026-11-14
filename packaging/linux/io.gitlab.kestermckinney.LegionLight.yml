@@ -31,9 +31,8 @@ modules:
       build-args:
         - --share=network
     build-commands:
-      - cargo build --release --locked --features gui --bin legion_light --bin legion_light_ctl
+      - cargo build --release --locked --features gui --bin legion_light
       - install -Dm755 target/release/legion_light /app/bin/legion_light
-      - install -Dm755 target/release/legion_light_ctl /app/bin/legion_light_ctl
       - install -Dm644 packaging/linux/io.gitlab.kestermckinney.LegionLight.desktop /app/share/applications/io.gitlab.kestermckinney.LegionLight.desktop
       - install -Dm644 packaging/linux/io.gitlab.kestermckinney.LegionLight.metainfo.xml /app/share/metainfo/io.gitlab.kestermckinney.LegionLight.metainfo.xml
       - install -Dm644 packaging/linux/icons/scalable/io.gitlab.kestermckinney.LegionLight.svg /app/share/icons/hicolor/scalable/apps/io.gitlab.kestermckinney.LegionLight.svg

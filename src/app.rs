@@ -25,18 +25,12 @@ impl LightingApp {
                 app.poll_worker(cx);
             }).is_err() { break; }
         }).detach();
-        let (profiles, startup_status) = match Self::preset_path() {
-            Ok(path) => match std::fs::read(path) {
-                Ok(bytes) => match ProfileSet::from_json(&bytes) {
-                    Ok(set) => (set, "Saved drafts loaded — nothing applied yet".to_string()),
-                    Err(error) => (ProfileSet::default(), format!("Saved drafts could not load: {error}")),
-                },
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound =>
-                    (ProfileSet::default(), "Ready — choose a colour or profile to apply".to_string()),
-                Err(error) => (ProfileSet::default(), format!("Saved drafts could not load: {error}")),
-            },
-            Err(error) => (ProfileSet::default(), error),
-        };
+        // Saved drafts are a starting point only; the firmware read below replaces
+        // the status line, so a missing or unreadable file falls back silently.
+        let profiles = Self::preset_path().ok()
+            .and_then(|path| std::fs::read(path).ok())
+            .and_then(|bytes| ProfileSet::from_json(&bytes).ok())
+            .unwrap_or_default();
         let state = profiles.profiles[profiles.selected].clone();
         let focus = cx.focus_handle();
         window.focus(&focus);

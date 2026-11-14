@@ -4,16 +4,14 @@ A Rust + GPUI application for the Lenovo Legion 5 15AHP11 (`83Q7`) that controls
 the keyboard backlight and the handful of other settings the Windows "Legion
 Space" utility exposes.
 
-Status: **Phase 0 passed, Phase 1 done.** `legion_light_ctl` is implemented in
-`src/`, builds clean, and has driven the real keyboard: the `C8`/`CB`/`CE`
-sequence is accepted by `048d:c615` and the kernel log stays silent. Visual
-confirmation of the colour is the one thing a command line cannot check for
-itself. Numbers and timings are in `docs/protocol-notes.md` §8.
-Evidence and raw readings are in [`docs/protocol-notes.md`](docs/protocol-notes.md).
+Status: **the GPUI desktop app (`legion_light`) is the product.** The Phase 0/1
+command-line tool and the C/Python probes that established the protocol have been
+removed; their findings remain in [`docs/protocol-notes.md`](docs/protocol-notes.md)
+and [`docs/installer-analysis.md`](docs/installer-analysis.md). Sections below that
+describe a CLI or `sysfs` module are historical design notes.
 
-Everything below is Rust. There is no Python in the product, the test suite, the
-probe tools, the build, or the packaging — the same rule SeeMyMac applies after
-removing its Python `ui_driver`.
+Everything in the repository is Rust. There is no Python or C in the product, the
+test suite or the packaging.
 
 ---
 
@@ -211,38 +209,20 @@ expose.
 
 ## 6. Toolchain: Rust + GPUI, following SeeMyMac
 
-The application is a single Rust crate with a `lib` and several `[[bin]]`
-targets, exactly like `../SeeMyMac`: `src/main.rs` opens the window, `src/app.rs`
+The application is a single Rust crate with a `lib` and one `[[bin]]`
+target, exactly like `../SeeMyMac`: `src/main.rs` opens the window, `src/app.rs`
 is the controller, `src/view.rs` is rendering, pure logic lives in modules that
 never import `gpui`, and `src/ui_tests.rs` drives the real view through
 `gpui::VisualTestContext`.
 
 ```toml
-[package]
-name = "legion_light"
-version = "0.1.0"
-edition = "2021"
-default-run = "legion_light_ctl"   # becomes `legion_light` in Phase 2
-
-[dependencies]
-libc = "0.2"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "2"
-
-# Phase 2 adds the window; these stay commented until then so the Phase 0/1 tool
-# builds in about a second and needs no GPU/Wayland stack:
-#   gpui = "0.2.2"          async-channel = "2"      futures-lite = "2"
-#   dirs = "5"              log = "0.4"              env_logger = "0.10"
+[features]
+gui = ["dep:gpui"]                 # the library builds without GPUI
 
 [[bin]]
-name = "legion_light_ctl"
-path = "src/bin/legion_light_ctl.rs"
-
-# Phase 3
-# [[bin]]
-# name = "legion_lightd"
-# path = "src/bin/legion_lightd.rs"
+name = "legion_light"
+path = "src/main.rs"
+required-features = ["gui"]
 ```
 
 Deliberate choices:
@@ -317,12 +297,11 @@ src/lighting/descriptor.rs  HID report-descriptor reader — pure
 src/lighting/hid.rs         discovery, identity gate, ioctl transport
 src/lighting/worker.rs      thread, Command/Event, rate limiter      (Phase 2)
 src/lighting/zone_map.rs    logical zone ↔ UI region, calibration    (Phase 4)
-src/sysfs.rs                platform profile, conservation, fn lock, fan, telemetry
-src/bin/legion_light_ctl.rs probe / apply / off / doctor CLI
 ```
 
-Implemented today: `model`, `lighting::{protocol, descriptor, hid}`, `sysfs` and
-the CLI. The `(Phase n)` modules are planned, not present.
+Implemented today: `main`, `app`, `view`, `ui_tests`, `model` and
+`lighting::{protocol, descriptor, hid, palette, worker}`. `panels`, `settings` and
+the `(Phase 4)` module are planned, not present.
 
 **`model.rs` and `lighting/protocol.rs` import no `gpui` and no `libc`.** They are
 unit-tested on any machine, hardware or not. That split is what makes the protocol
