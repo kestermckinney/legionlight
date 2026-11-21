@@ -26,9 +26,8 @@ and access the signing secrets.
 3. Check the Flatpak workflow, GitHub release, and hosted repository. CI rejects
    a tag that doesn't match `Cargo.toml`.
 
-A manually dispatched workflow builds and publishes the current 0.3.0 version
-without creating a release; update its `RELEASE_TAG` value or use a tag for later
-versions.
+A manually dispatched workflow builds and publishes the version in `Cargo.toml`
+without creating a GitHub release.
 
 ## Local build
 

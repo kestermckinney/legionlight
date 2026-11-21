@@ -38,8 +38,9 @@ jobs:
       - name: Build signed repository and bundle
         env:
           SIGNING_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
-          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && 'v0.3.0' || github.ref_name }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && '' || github.ref_name }}
         run: |
+          if [ -z "$RELEASE_TAG" ]; then RELEASE_TAG="v$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"; export RELEASE_TAG; fi
           export FLATPAK_GPG_PRIVATE_KEY="$RUNNER_TEMP/flatpak-signing.asc"
           umask 077
           printf '%s' "$SIGNING_KEY" > "$FLATPAK_GPG_PRIVATE_KEY"
