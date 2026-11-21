@@ -52,7 +52,7 @@ Use `--system` instead of `--user` for a system-wide remote.
 
 The GNOME Shell extension (top-bar icon, settings dialog and idle dimming daemon)
 lives in its own project with its own Flatpak:
-[Legion Light for GNOME](https://gitlab.com/kestermckinney/gnomelegionlight).
+[Legion Light for GNOME](https://github.com/kestermckinney/GnomeLegionLight).
 It uses this crate's `legion_light` library to drive the keyboard. Do not run the
 desktop app and the GNOME daemon at the same time.
 
