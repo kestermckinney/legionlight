@@ -14,7 +14,7 @@ runtime). Add the Legion Light repository, then install and run:
 
 ```bash
 flatpak remote-add --user --if-not-exists legionlight \
-  https://kestermckinney.gitlab.io/legionlight/flatpak/legionlight.flatpakrepo
+  https://kestermckinney.github.io/legionlight/flatpak/legionlight.flatpakrepo
 flatpak install --user legionlight io.gitlab.kestermckinney.LegionLight
 flatpak run io.gitlab.kestermckinney.LegionLight
 ```
@@ -22,13 +22,23 @@ flatpak run io.gitlab.kestermckinney.LegionLight
 Update with `flatpak update`. Or install the `LegionLight.flatpak` bundle from the
 latest release with `flatpak install --user LegionLight.flatpak`.
 
-The Flatpak cannot grant it permission to access `/dev/hidraw*` without additional setup:
-see https://github.com/kestermckinney/legionlight/issues/130 for details.
-A manual workaround is available via:
+The host needs a udev rule to grant access to the keyboard. After installing, run:
 
 ```bash
-sudo udevadm control --reload-rules
+sudo install -m644 /var/lib/flatpak/app/io.gitlab.kestermckinney.LegionLight/current/active/files/share/legionlight/70-legionlight.rules /etc/udev/rules.d/
+sudo udevadm control --reload && sudo udevadm trigger
 ```
+
+For a per-user installation, the rule is under
+`~/.local/share/flatpak/app/io.gitlab.kestermckinney.LegionLight/current/active/files/share/legionlight/`.
+Existing users of the GitLab remote can move it to GitHub while keeping the same
+signing key and app ID:
+
+```bash
+flatpak remote-modify --user --url=https://kestermckinney.github.io/legionlight/flatpak/ legionlight
+flatpak update --user io.gitlab.kestermckinney.LegionLight
+```
+Use `--system` instead of `--user` for a system-wide remote.
 
 ## Features
 

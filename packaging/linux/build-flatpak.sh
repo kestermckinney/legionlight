@@ -30,13 +30,13 @@ if [ "$USE_BUILDER_FLATPAK" = "1" ] || \
 fi
 
 # LL_REF picks the source that gets compiled:
-#   latest (default)  newest v* tag on GitLab
+#   latest (default)  newest v* tag on GitHub
 #   local             this working tree, uncommitted edits included (for testing)
 #   pinned            the manifest's committed `commit:` value, untouched
 #   <tag|branch|sha>  that ref
 # The resolved pin goes into a generated copy; the committed manifest is not edited.
 LL_REF="${LL_REF:-latest}"
-LL_GIT_URL="https://gitlab.com/kestermckinney/legionlight.git"
+LL_GIT_URL="https://github.com/kestermckinney/legionlight.git"
 RESOLVED_MANIFEST="$SCRIPT_DIR/.${APP_ID}.resolved.yml"
 LINTER_APP="org.flatpak.Builder"
 METAINFO_FILE="$SCRIPT_DIR/${APP_ID}.metainfo.xml"
@@ -87,7 +87,7 @@ gpg_sign_args() {
 usage() {
     echo "Usage: $0 [setup|build|lint|run|install|repo|bundle|clean]"
     echo ""
-    echo "  build/install/repo clone Legion Light from GitLab. By default they build"
+    echo "  build/install/repo clone Legion Light from GitHub. By default they build"
     echo "  the newest v* tag. Override with LL_REF=<tag|branch|sha>, LL_REF=local to"
     echo "  build this working tree, or LL_REF=pinned for the manifest's commit."
     echo ""

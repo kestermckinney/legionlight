@@ -1,0 +1,73 @@
+name: Flatpak
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: flatpak-release
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked
+  build:
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    env:
+      FLATPAK_REPO_URL: https://kestermckinney.github.io/legionlight/flatpak/
+      FLATPAK_GPG_KEY_ID: ${{ secrets.FLATPAK_GPG_KEY_ID }}
+      FLATPAK_GPG_PRIVATE_KEY: ${{ runner.temp }}/flatpak-signing.asc
+      FLATPAK_GPG_PASSPHRASE: ${{ secrets.FLATPAK_GPG_PASSPHRASE }}
+      DISABLE_ROFILES_FUSE: '1'
+      USE_BUILDER_FLATPAK: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Flatpak tools
+        run: sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder gnupg python3 appstream desktop-file-utils
+      - name: Build signed repository and bundle
+        env:
+          SIGNING_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && 'v0.3.0' || github.ref_name }}
+        run: |
+          umask 077
+          printf '%s' "$SIGNING_KEY" > "$FLATPAK_GPG_PRIVATE_KEY"
+          trap 'rm -f "$FLATPAK_GPG_PRIVATE_KEY"' EXIT
+          bash packaging/github/build-release.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LegionLight-flatpak
+          path: |
+            packaging/linux/LegionLight.flatpak
+            packaging/linux/legionlight.flatpakrepo
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - name: Publish release bundle
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" packaging/linux/LegionLight.flatpak packaging/linux/legionlight.flatpakrepo --generate-notes
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

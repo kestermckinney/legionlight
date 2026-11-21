@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Runs in the flatpak-release CI job: signed OSTree repo + bundle for a v* tag.
+# Runs in the GitHub Actions release job: signed OSTree repo + bundle for a v* tag.
 set -euo pipefail
-: "${FLATPAK_GPG_PRIVATE_KEY:?Set the protected GitLab file variable containing the signing key}"
+: "${FLATPAK_GPG_PRIVATE_KEY:?Set the path to the signing key}"
 : "${FLATPAK_GPG_KEY_ID:?Set the signing key fingerprint}"
-: "${CI_COMMIT_SHA:?}"
-: "${CI_COMMIT_TAG:?}"
+: "${GITHUB_SHA:?}"
+: "${RELEASE_TAG:?}"
 : "${FLATPAK_REPO_URL:?}"
 
 # Signing material lives only in an ephemeral keyring, never in artifacts.
@@ -34,16 +34,16 @@ if expected != actual:
 PY
 
 version="$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)"
-[ "$CI_COMMIT_TAG" = "v$version" ] || { echo "Tag $CI_COMMIT_TAG does not match Cargo.toml version $version"; exit 1; }
+[ "$RELEASE_TAG" = "v$version" ] || { echo "Tag $RELEASE_TAG does not match Cargo.toml version $version"; exit 1; }
 
-flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-flatpak install -y --noninteractive flathub \
+flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y --noninteractive flathub \
   org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08 \
   org.freedesktop.Sdk.Extension.rust-stable//25.08
 mkdir -p /var/lib/dbus
 dbus-uuidgen --ensure=/etc/machine-id
 export GPG_KEY_ID="$FLATPAK_GPG_KEY_ID" GPG_HOMEDIR="$GNUPGHOME"
-export APP_REPO_URL="$FLATPAK_REPO_URL" LL_REF="$CI_COMMIT_SHA"
+export APP_REPO_URL="$FLATPAK_REPO_URL" LL_REF="$GITHUB_SHA"
 # Export performs the build; do not compile everything twice.
 mkdir -p packaging/linux/flatpak-build
 bash packaging/linux/build-flatpak.sh repo

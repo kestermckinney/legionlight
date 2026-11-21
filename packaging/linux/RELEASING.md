@@ -1,75 +1,47 @@
-# Linux releases on GitLab
+# Linux releases on GitHub
 
-A `v*` tag pipeline builds a signed OSTree repository and a `LegionLight.flatpak`
-bundle. The manual `publish-release` job deploys the repository to GitLab Pages at
-`https://kestermckinney.gitlab.io/legionlight/flatpak/`.
+GitHub Actions builds a signed Flatpak repository and bundle. GitHub Pages hosts
+the repository at `https://kestermckinney.github.io/legionlight/flatpak/`.
+The app ID remains `io.gitlab.kestermckinney.LegionLight` so existing installations
+can update. The GitLab project is private, so this ID will not pass Flathub's
+public ownership checks; this repository is self-hosted, not a Flathub submission.
 
-## One-time setup
+## Signing and publishing
 
-1. Make the project **public** (the Flatpak app ID
-   `io.gitlab.kestermckinney.LegionLight` must resolve to
-   `https://gitlab.com/kestermckinney/LegionLight`; the Flathub linter checks it).
-2. Enable GitLab Pages with public access and disable **Use unique domain** so the
-   stable URL above serves the repository without redirects.
-3. Protect `v*` tags and add protected CI/CD variables:
+The repository's Actions secrets `FLATPAK_GPG_PRIVATE_KEY` and
+`FLATPAK_GPG_KEY_ID` hold the existing signing key and fingerprint. If the key
+has a passphrase, set `FLATPAK_GPG_PASSPHRASE` as well. Keep an independent,
+secure backup of the private key. The build checks it against the public key in
+`legionlight.flatpakrepo` and stops if they differ.
 
-   | Variable | Type | Contents |
-   | --- | --- | --- |
-   | `FLATPAK_GPG_PRIVATE_KEY` | File | `.release-secrets/flatpak-signing-private.asc` |
-   | `FLATPAK_GPG_KEY_ID` | Variable | `.release-secrets/fingerprint.txt` |
-   | `FLATPAK_GPG_PASSPHRASE` | Masked variable | Only if the key has a passphrase (this one has none) |
+GitHub Pages must use GitHub Actions as its publishing source. A successful tag
+build publishes the Pages repository and attaches the bundle and `.flatpakrepo`
+to a GitHub release. Only publish trusted tags: a tag build can deploy the site
+and access the signing secrets.
 
-   `.release-secrets/` is git-ignored and holds the private key and revocation
-   certificate. Back it up somewhere safe; never commit it. The matching public key
-   is embedded in `legionlight.flatpakrepo`, and CI refuses to sign with any other key.
-4. Use a runner that can run Flatpak/bubblewrap builds (a self-managed Docker runner
-   may need privileged mode).
+1. Bump the version in `Cargo.toml` and `Cargo.lock`, and add a release to
+   `io.gitlab.kestermckinney.LegionLight.metainfo.xml`.
+2. Commit and push to `main`, then create and push a matching tag, for example
+   `git tag v0.4.0 && git push origin v0.4.0`.
+3. Check the Flatpak workflow, GitHub release, and hosted repository. CI rejects
+   a tag that doesn't match `Cargo.toml`.
 
-## Cut a release
-
-1. Bump `version` in `Cargo.toml` and add a `<release>` to
-   `packaging/linux/io.gitlab.kestermckinney.LegionLight.metainfo.xml`.
-2. Commit, push, then tag: `git tag v0.1.0 && git push origin v0.1.0`.
-   CI checks that the tag matches `Cargo.toml`.
-3. Review the `flatpak-release` artifacts, then run `publish-release`.
+A manually dispatched workflow builds and publishes the current 0.3.0 version
+without creating a release; update its `RELEASE_TAG` value or use a tag for later
+versions.
 
 ## Local build
 
 ```bash
-./packaging/linux/build-flatpak.sh setup          # once
-LL_REF=local ./packaging/linux/build-flatpak.sh install   # build working tree and install
+./packaging/linux/build-flatpak.sh setup
+LL_REF=local ./packaging/linux/build-flatpak.sh install
 flatpak run io.gitlab.kestermckinney.LegionLight
 ```
 
-`LL_REF` selects the source: `latest` tag (default), `local` working tree, `pinned`
-manifest commit, or any tag/branch/SHA. For a signed local repo set `GPG_KEY_ID`,
-`GPG_HOMEDIR`, `APP_REPO_URL`, then run `repo` and `bundle`.
+`LL_REF` selects the latest tag (default), `local` working tree, `pinned`
+manifest commit, or a tag, branch or SHA. For a signed local repository set
+`GPG_KEY_ID`, `GPG_HOMEDIR`, and `APP_REPO_URL`, then run `repo` and `bundle`.
+See the README for installation, migration and keyboard access instructions.
 
-## Installing
-
-```bash
-flatpak remote-add --user --if-not-exists legionlight \
-  https://kestermckinney.gitlab.io/legionlight/flatpak/legionlight.flatpakrepo
-flatpak install legionlight io.gitlab.kestermckinney.LegionLight
-```
-
-## Keyboard access (host udev rule)
-
-A Flatpak cannot install udev rules. The sandbox gets `/dev/hidraw*` through
-`--device=all`, but the host must still allow your session to open the keyboard:
-
-```bash
-sudo install -m644 70-legionlight.rules /etc/udev/rules.d/
-sudo udevadm control --reload && sudo udevadm trigger
-```
-
-Copy the rule from `packaging/70-legionlight.rules` in the repository, or from
-`/var/lib/flatpak/app/io.gitlab.kestermckinney.LegionLight/current/active/files/share/legionlight/`
-after installing.
-
-## Known limits
-
-- Crates are downloaded during the Flatpak build (`--share=network`). Flathub would
-  require offline sources from `flatpak-cargo-generator`.
-- The Flathub linter flags the `--device=all` permission; the self-hosted repo has
-  no such gate.
+The build downloads crates over the network. A Flathub submission would require
+offline sources and review of the `--device=all` permission.

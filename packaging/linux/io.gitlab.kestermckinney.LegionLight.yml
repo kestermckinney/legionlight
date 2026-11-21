@@ -42,5 +42,5 @@ modules:
       # build-flatpak.sh and CI overwrite this commit with the release tag's SHA.
       # LL_REF=local swaps it for the working tree (see build-flatpak.sh).
       - type: git
-        url: https://gitlab.com/kestermckinney/legionlight.git
+        url: https://github.com/kestermckinney/legionlight.git
         commit: bb7631085a52e0923875c13044e8ddbc98f431a2
